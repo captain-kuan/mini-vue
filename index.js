@@ -38,11 +38,15 @@ function trigger(target, key) {
     });
   }
 }
+const effectStack = [];
 function effect(fn) {
   const effectFn = () => {
     cleanupEffect(effectFn);
+    effectStack.push(effectFn);
     activeEffect = effectFn;
     fn();
+    effectStack.pop();
+    activeEffect = effectStack[effectStack.length - 1];
   };
   effectFn.deps = [];
   effectFn();
@@ -60,12 +64,10 @@ const vm = reactive({
 });
 
 effect(() => {
-  console.log("e1", vm.ok ? vm.name : vm.msg);
   effect(() => {
     console.log("e2", vm.code);
   });
+  console.log("e1", vm.name);
 });
-vm.ok = false;
 
-vm.name = "nodejs";
 vm.code = 400;
